@@ -46,14 +46,20 @@ def preprocessong(data_path):
     data_frame['text'] = data_frame['text'].apply(" ".join)
     return data_frame
 
-data_frame = preprocessong("/home/giuseppe/Scrivania/Università/Tesi/Decision Tree Classifier/Dati/datasetAll.csv")
+#funzione per la vettorizzazione del testo
+def vectorizzation(X_train, func):
+    #vettorizzazione dei dati utilizzando la unzione scelta
+    vectorized_data = func.fit_transform(X_train)
+    #conversione dei dati vettorizzati sottoforma di matrice in una rappresentazione tf-idf
+    tfidf = TfidfTransformer()
+    return tfidf.fit_transform(vectorized_data)
 
+#fase di preprocessing del testo
+data_frame = preprocessong("/home/giuseppe/Scrivania/Università/Tesi/Decision Tree Classifier/Dati/datasetAll.csv")
+#creazione di due liste per i testi e le label presenti nel data_frame
 text_list = data_frame["text"].tolist()
 label_list = data_frame["label"].tolist()
 #divisione del dataset per il training e il testing
 X_train, X_test, y_train, y_test = train_test_split(text_list, label_list, test_size=0.2, random_state=0)
-
-
-
-text = "hbdejT;TU.IH5 This is inttroduction  fishes leaves fish leaf"
-print(text_preprocessing_pipeline(text))
+#fase di vettorizzazione del testo
+X_train = vectorizzation(X_train, CountVectorizer())
