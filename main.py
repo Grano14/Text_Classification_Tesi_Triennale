@@ -1,15 +1,17 @@
 import nltk
 from nltk.corpus import stopwords
 import textblob
+from sklearn.metrics import accuracy_score, precision_score, confusion_matrix, f1_score
+from sklearn.svm import LinearSVC
 from textblob import TextBlob
 from textblob import Word
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import train_test_split
-nltk.download('wordnet')
-nltk.download('stopwords')
-nltk.download('punkt')
+#nltk.download('wordnet')
+#nltk.download('stopwords')
+#nltk.download('punkt')
 
 #implementazione della funzione per la pulizia del testo grezzo
 def text_preprocessing_pipeline(text):
@@ -47,12 +49,17 @@ def preprocessong(data_path):
     return data_frame
 
 #funzione per la vettorizzazione del testo
-def vectorizzation(X_train, func):
+def vectorizzation_and_training(X_train, func, model):
     #vettorizzazione dei dati utilizzando la unzione scelta
     vectorized_data = func.fit_transform(X_train)
     #conversione dei dati vettorizzati sottoforma di matrice in una rappresentazione tf-idf
     tfidf = TfidfTransformer()
-    return tfidf.fit_transform(vectorized_data)
+    X_train = tfidf.fit_transform(vectorized_data)
+    model.fit(X_train, y_train)
+    X_test_vectorized = func.transform(X_test)
+    X_test_tfidf = tfidf.transform(X_test_vectorized)
+
+    return model.predict(X_test_tfidf)
 
 #fase di preprocessing del testo
 data_frame = preprocessong("/home/giuseppe/Scrivania/Università/Tesi/Decision Tree Classifier/Dati/datasetAll.csv")
@@ -61,5 +68,6 @@ text_list = data_frame["text"].tolist()
 label_list = data_frame["label"].tolist()
 #divisione del dataset per il training e il testing
 X_train, X_test, y_train, y_test = train_test_split(text_list, label_list, test_size=0.2, random_state=0)
-#fase di vettorizzazione del testo
-X_train = vectorizzation(X_train, CountVectorizer())
+#fase di vettorizzazione del testo, addestramento del modello e ottenimento del valori predetti dal modello addestrato sui dati di test
+pred = vectorizzation_and_training(X_train, CountVectorizer(), LinearSVC())
+
