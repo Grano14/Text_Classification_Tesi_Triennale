@@ -56,10 +56,18 @@ def vectorizzation_and_training(X_train, func, model):
     tfidf = TfidfTransformer()
     X_train = tfidf.fit_transform(vectorized_data)
     model.fit(X_train, y_train)
+    #vettorizzazione dei dati di test
     X_test_vectorized = func.transform(X_test)
     X_test_tfidf = tfidf.transform(X_test_vectorized)
-
+    #restituire i valori predetti sui dati di test
     return model.predict(X_test_tfidf)
+
+#funzione per la stampa delle metriche di valutazione
+def print_metrics(pred, y_test):
+    print(accuracy_score(y_test, pred))
+    print(precision_score(y_test, pred, average='macro'))
+    print(confusion_matrix(y_test, pred))
+    print(f1_score(y_test, pred, average='macro'))
 
 #fase di preprocessing del testo
 data_frame = preprocessong("/home/giuseppe/Scrivania/Università/Tesi/Decision Tree Classifier/Dati/datasetAll.csv")
@@ -70,4 +78,5 @@ label_list = data_frame["label"].tolist()
 X_train, X_test, y_train, y_test = train_test_split(text_list, label_list, test_size=0.2, random_state=0)
 #fase di vettorizzazione del testo, addestramento del modello e ottenimento del valori predetti dal modello addestrato sui dati di test
 pred = vectorizzation_and_training(X_train, CountVectorizer(), LinearSVC())
-
+#stampa delle metriche
+print_metrics(pred, y_test)
