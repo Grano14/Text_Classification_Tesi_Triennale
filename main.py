@@ -1,7 +1,7 @@
 import nltk
 from nltk.corpus import stopwords
 import textblob
-from sklearn.metrics import accuracy_score, precision_score, confusion_matrix, f1_score
+from sklearn.metrics import accuracy_score, precision_score, confusion_matrix, f1_score, recall_score
 from sklearn.svm import LinearSVC
 from textblob import TextBlob
 from textblob import Word
@@ -64,10 +64,16 @@ def vectorizzation_and_training(X_train, func, model):
 
 #funzione per la stampa delle metriche di valutazione
 def print_metrics(pred, y_test):
-    print(accuracy_score(y_test, pred))
-    print(precision_score(y_test, pred, average='macro'))
+    print("Matrice di confusione --> ")
     print(confusion_matrix(y_test, pred))
+    print("Accuracy --> ")
+    print(accuracy_score(y_test, pred))
+    print("Precision --> ")
+    print(precision_score(y_test, pred, average='macro'))
+    print("F1 score --> ")
     print(f1_score(y_test, pred, average='macro'))
+    print("Recall --> ")
+    print(recall_score(y_test, pred, average='macro'))
 
 #fase di preprocessing del testo
 data_frame = preprocessong("/home/giuseppe/Scrivania/Università/Tesi/Decision Tree Classifier/Dati/datasetAll.csv")
@@ -77,6 +83,6 @@ label_list = data_frame["label"].tolist()
 #divisione del dataset per il training e il testing
 X_train, X_test, y_train, y_test = train_test_split(text_list, label_list, test_size=0.2, random_state=0)
 #fase di vettorizzazione del testo, addestramento del modello e ottenimento del valori predetti dal modello addestrato sui dati di test
-pred = vectorizzation_and_training(X_train, CountVectorizer(), LinearSVC())
+pred = vectorizzation_and_training(X_train, CountVectorizer(), LinearSVC(dual=True))
 #stampa delle metriche
 print_metrics(pred, y_test)
