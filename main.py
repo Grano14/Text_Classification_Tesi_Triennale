@@ -3,6 +3,7 @@ from nltk.corpus import stopwords
 import textblob
 from sklearn.metrics import accuracy_score, precision_score, confusion_matrix, f1_score, recall_score
 from sklearn.svm import LinearSVC
+from sklearn.tree import DecisionTreeClassifier
 from textblob import TextBlob
 from textblob import Word
 import pandas as pd
@@ -49,18 +50,15 @@ def preprocessong(data_path):
     return data_frame
 
 #funzione per la vettorizzazione del testo
-def vectorizzation_and_training(X_train, func, model):
-    #vettorizzazione dei dati utilizzando la unzione scelta
-    vectorized_data = func.fit_transform(X_train)
-    #conversione dei dati vettorizzati sottoforma di matrice in una rappresentazione tf-idf
-    tfidf = TfidfTransformer()
-    X_train = tfidf.fit_transform(vectorized_data)
-    model.fit(X_train, y_train)
+def vectorizzation_and_training(X_train, y_train, X_test, func, model):
+    # vettorizzazione dei dati utilizzando il modello bag of word
+    X_train_bow = func.fit_transform(X_train)
     #vettorizzazione dei dati di test
-    X_test_vectorized = func.transform(X_test)
-    X_test_tfidf = tfidf.transform(X_test_vectorized)
+    X_test_bow = func.transform(X_test)
+    #addestramento del modello
+    model.fit(X_train_bow, y_train)
     #restituire i valori predetti sui dati di test
-    return model.predict(X_test_tfidf)
+    return model.predict(X_test_bow)
 
 #funzione per la stampa delle metriche di valutazione
 def print_metrics(pred, y_test):
@@ -83,6 +81,6 @@ label_list = data_frame["label"].tolist()
 #divisione del dataset per il training e il testing
 X_train, X_test, y_train, y_test = train_test_split(text_list, label_list, test_size=0.2, random_state=0)
 #fase di vettorizzazione del testo, addestramento del modello e ottenimento del valori predetti dal modello addestrato sui dati di test
-pred = vectorizzation_and_training(X_train, CountVectorizer(), LinearSVC(dual=True))
+pred = vectorizzation_and_training(X_train, y_train, X_test, CountVectorizer(), DecisionTreeClassifier(random_state=4, max_depth=900))
 #stampa delle metriche
 print_metrics(pred, y_test)
