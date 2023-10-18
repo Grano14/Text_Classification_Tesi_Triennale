@@ -4,11 +4,12 @@ import textblob
 from sklearn.metrics import accuracy_score, precision_score, confusion_matrix, f1_score, recall_score
 from sklearn.svm import LinearSVC
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import MultinomialNB
 from textblob import TextBlob
 from textblob import Word
 import pandas as pd
+import timeit
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import train_test_split
 #nltk.download('wordnet')
 #nltk.download('stopwords')
@@ -62,8 +63,8 @@ def vectorizzation_and_training(X_train, y_train, X_test, func, model):
 
 #funzione per la stampa delle metriche di valutazione
 def print_metrics(pred, y_test):
-    print("Matrice di confusione --> ")
-    print(confusion_matrix(y_test, pred))
+    #print("Matrice di confusione --> ")
+    #print(confusion_matrix(y_test, pred))
     print("Accuracy --> ")
     print(accuracy_score(y_test, pred))
     print("Precision --> ")
@@ -80,7 +81,47 @@ text_list = data_frame["text"].tolist()
 label_list = data_frame["label"].tolist()
 #divisione del dataset per il training e il testing
 X_train, X_test, y_train, y_test = train_test_split(text_list, label_list, test_size=0.2, random_state=0)
-#fase di vettorizzazione del testo, addestramento del modello e ottenimento del valori predetti dal modello addestrato sui dati di test
-pred = vectorizzation_and_training(X_train, y_train, X_test, CountVectorizer(), DecisionTreeClassifier(random_state=4, max_depth=900))
-#stampa delle metriche
-print_metrics(pred, y_test)
+
+print('MultinomialNB')
+params = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+best_param = 0
+best_value = 0
+for param in params:
+    #fase di vettorizzazione del testo, addestramento del modello e ottenimento del valori predetti dal modello addestrato sui dati di test
+    pred = vectorizzation_and_training(X_train, y_train, X_test, CountVectorizer(), MultinomialNB(alpha=param))
+    #stampa delle metriche
+    #print_metrics(pred, y_test)
+    if best_value < accuracy_score(y_test, pred):
+        best_value = accuracy_score(y_test, pred)
+        best_param = param
+#print('best param = ' + str(best_param) + 'best value = ' + str(best_value))
+print(confusion_matrix(y_test, pred))
+
+print('LinearSVC')
+params = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+best_param = 0
+best_value = 0
+for param in params:
+    #fase di vettorizzazione del testo, addestramento del modello e ottenimento del valori predetti dal modello addestrato sui dati di test
+    pred = vectorizzation_and_training(X_train, y_train, X_test, CountVectorizer(), LinearSVC(dual=True, C=param, max_iter=100000))
+    #stampa delle metriche
+    #print_metrics(pred, y_test)
+    if best_value < accuracy_score(y_test, pred):
+        best_value = accuracy_score(y_test, pred)
+        best_param = param
+#print('best param = ' + str(best_param) + 'best value = ' + str(best_value))
+print(confusion_matrix(y_test, pred))
+
+print('tree')
+params = [["gini", "best"], ["gini", "random"], ["entropy", "best"], ["entropy", "random"]]
+best_param = 0
+best_value = 0
+for param in params:
+    #fase di vettorizzazione del testo, addestramento del modello e ottenimento del valori predetti dal modello addestrato sui dati di test
+    pred = vectorizzation_and_training(X_train, y_train, X_test, CountVectorizer(), DecisionTreeClassifier(criterion= param[0], splitter= param[1]))
+    #stampa delle metriche
+    #print_metrics(pred, y_test)
+    if best_value < accuracy_score(y_test, pred):
+        best_value = accuracy_score(y_test, pred)
+        best_param = param
+print('best param = ' + str(best_param) + 'best value = ' + str(best_value))
